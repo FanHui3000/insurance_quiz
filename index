@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Insurance Principles Quiz Tool</title>
+    <!-- Tailwind CSS CDN for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Inter font for better readability -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6; /* 淺灰色背景 */
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* 在小螢幕上靠頂部對齊以更好地滾動 */
+            min-height: 100vh;
+            padding: 2rem 1rem; /* 增加整體佈局的內邊距 */
+        }
+        .quiz-container {
+            background-color: #ffffff; /* 測驗框的白色背景 */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* 微妙陰影 */
+            border-radius: 1rem; /* 圓角 */
+            padding: 2rem;
+            max-width: 800px; /* 桌面最大寬度 */
+            width: 100%;
+        }
+        .question-text-zh {
+            font-size: 1.125rem; /* 等同於 text-lg */
+            font-weight: 600; /* 等同於 font-semibold */
+            color: #374151; /* 等同於 text-gray-700 */
+            margin-bottom: 0.5rem;
+        }
+        .question-text-en {
+            font-size: 1rem; /* 英文略小 */
+            font-weight: 500;
+            color: #4b5563; /* 英文文本略深灰色 */
+            margin-bottom: 1rem;
+        }
+        .sub-options-list {
+            list-style: none; /* 移除默認列表樣式 */
+            padding-left: 0;
+            margin-bottom: 1rem;
+        }
+        .sub-options-list li {
+            margin-bottom: 0.5rem;
+            color: #4b5563; /* 深灰色文本 */
+        }
+        .sub-option-zh {
+            font-weight: 500;
+            color: #374151;
+        }
+        .sub-option-en {
+            font-size: 0.95rem;
+            color: #6b7280;
+        }
+        .option-label {
+            display: flex;
+            flex-direction: column; /* 讓中文和英文選項垂直排列 */
+            align-items: flex-start; /* 讓內容靠左對齊 */
+            padding: 0.75rem 1rem;
+            background-color: #f9fafb; /* 選項的略深背景 */
+            border-radius: 0.5rem;
+            margin-bottom: 0.75rem;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out, border 0.2s ease-in-out;
+            border: 1px solid #e5e7eb; /* 默認邊框 */
+        }
+        .option-label:hover {
+            background-color: #e5e7eb; /* 懸停效果 */
+        }
+        .option-content {
+            display: flex;
+            align-items: center;
+            width: 100%; /* 佔據整個標籤寬度 */
+        }
+        .option-label input[type="radio"] {
+            margin-right: 0.75rem;
+            flex-shrink: 0; /* 防止收縮 */
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            width: 1.25rem;
+            height: 1.25rem;
+            border: 2px solid #9ca3af; /* 灰色邊框 */
+            border-radius: 50%;
+            outline: none;
+            cursor: pointer;
+            position: relative;
+        }
+        .option-label input[type="radio"]:checked {
+            background-color: #3b82f6; /* 選中時為藍色填充 */
+            border-color: #3b82f6;
+        }
+        .option-label input[type="radio"]:checked::before {
+            content: '';
+            display: block;
+            width: 0.625rem;
+            height: 0.625rem;
+            background-color: #ffffff; /* 內部白點 */
+            border-radius: 50%;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        .option-text-zh {
+            color: #374151;
+            font-weight: 500;
+        }
+        .option-text-en {
+            font-size: 0.9rem; /* 英文選項文本略小 */
+            color: #6b7280;
+            margin-top: 0.25rem; /* 與中文文本間距 */
+        }
+        .button-group {
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        .button {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out;
+            flex-grow: 1; /* 允許按鈕增長 */
+            text-align: center;
+        }
+        .primary-button {
+            background-color: #2563eb;
+            color: white;
+        }
+        .primary-button:hover {
+            background-color: #1e40af;
+        }
+        .secondary-button {
+            background-color: #e5e7eb;
+            color: #374151;
+        }
+        .secondary-button:hover {
+            background-color: #d1d5db;
+        }
+        .explanation-box {
+            margin-top: 1.5rem;
+            padding: 1.25rem;
+            background-color: #e0f2f7; /* 淺藍色背景 */
+            border-radius: 0.75rem;
+            border: 1px solid #a7d9e7; /* 淺藍色邊框 */
+            color: #0c4a6e; /* 深藍色文本 */
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+        .hidden {
+            display: none;
+        }
+        .results-container {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background-color: #e0f2f7; /* 淺藍色背景 */
+            border-radius: 0.75rem;
+            border: 1px solid #a7d9e7; /* 淺藍色邊框 */
+            text-align: center;
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #0c4a6e; /* 深藍色文本 */
+        }
+    </style>
+</head>
+<body>
+    <div class="quiz-container">
+        <h1 class="text-3xl font-bold text-center text-gray-800 mb-8 rounded-lg p-2 bg-blue-50">保險原理測驗工具 / Insurance Principles Quiz Tool</h1>
+
+        <div id="questionContainer">
+            <!-- 問題將由 JavaScript 加載到此處 -->
+        </div>
+
+        <div class="button-group">
+            <button id="prevBtn" class="button secondary-button" disabled>上一題 / Previous</button>
+            <button id="checkBtn" class="button primary-button">檢查答案 / Check Answer</button>
+            <button id="nextBtn" class="button primary-button">下一題 / Next</button>
+        </div>
+
+        <div id="explanation" class="explanation-box hidden">
+            <p class="font-bold mb-2">解釋 / Explanation:</p>
+            <p id="explanationText"></p>
+        </div>
+
+        <div id="quizSummary" class="results-container mt-8 hidden">
+            <h2 class="text-2xl font-bold mb-4">測驗總結 / Quiz Summary</h2>
+            <p class="text-lg">您的得分: <span id="finalScore">0</span> / <span id="totalQuestionsSummary">0</span></p>
+            <button id="restartBtn" class="button primary-button mt-4 w-auto">重新開始測驗 / Restart Quiz</button>
+        </div>
+    </div>
+
+    <script>
+        const quizData = [
+            {
+                question_zh: '1.2(b) 以下哪項可視為保險為香港帶來的輔助功能/好處?',
+                question_en: '1.2(b) Which of the following can be considered a supplementary function/benefit that insurance brings to Hong Kong?',
+                subOptions_zh: [
+                    'i. 作為儲蓄途徑',
+                    'ii. 提供就業機會',
+                    'iii. 鼓勵經濟發展',
+                    'iv. 減低意外/損失的次數'
+                ],
+                subOptions_en: [
+                    'i. Serving as a savings vehicle',
+                    'ii. Providing employment opportunities',
+                    'iii. Encouraging economic development',
+                    'iv. Reducing the frequency of accidents/losses'
+                ],
+                options: {
+                    A: { zh: 'A. i, ii', en: 'A. i, ii' },
+                    B: { zh: 'B. i, ii, iii', en: 'B. i, ii, iii' },
+                    C: { zh: 'C. ii, iii, iv', en: 'C. ii, iii, iv' },
+                    D: { zh: 'D. 以上各項都是', en: 'D. All of the above' }
+                },
+                correctAnswer: 'D',
+                explanation: '保險為香港帶來多方面的輔助功能，包括作為儲蓄途徑、提供就業機會、鼓勵經濟發展，以及通過損失防範措施間接減低意外/損失的次數。因此，以上各項都是正確的輔助功能/好處。\n\nInsurance brings various supplementary functions to Hong Kong, including serving as a savings vehicle, providing employment opportunities, encouraging economic development, and indirectly reducing the frequency of accidents/losses through loss prevention measures. Therefore, all of the above are correct supplementary functions/benefits.'
+            },
+            {
+                question_zh: '1.1.1 有些情況構成難過及悲傷的感覺,如失去朋友,這些風險損失:',
+                question_en: '1.1.1 Some situations constitute feelings of sadness and grief, such as losing a friend. These risk losses:',
+                options: {
+                    A: { zh: 'A. 可以利用金錢衡量', en: 'A. Can be measured in money' },
+                    B: { zh: 'B. 通常是不可保的風險', en: 'B. Are usually uninsurable risks' },
+                    C: { zh: 'C. 屬於基本風險', en: 'C. Belong to fundamental risks' },
+                    D: { zh: 'D. 屬於投機風險', en: 'D. Belong to speculative risks' }
+                },
+                correctAnswer: 'B',
+                explanation: '非財務損失，如失去朋友帶來的悲傷，通常是不可衡量且不具備保險可保性標準的，因此是不可保的風險。\n\nNon-financial losses, such as grief from losing a friend, are typically immeasurable and do not meet the standards for insurability, thus they are usually uninsurable risks.'
+            },
+            {
+                question_zh: '1.1-1.1.1 以下關於風險的敘述中哪一個是正確的?',
+                question_en: '1.1-1.1.1 Which of the following statements about risk are correct?',
+                subOptions_zh: [
+                    'i. 所有風險都是可保的',
+                    'ii. 並非所有風險都屬於商業上可保的',
+                    'iii. 保險是應付風險的唯一方法',
+                    'iv. 保險人談及風險時可以有很多不同的意思'
+                ],
+                subOptions_en: [
+                    'i. All risks are insurable',
+                    'ii. Not all risks are commercially insurable',
+                    'iii. Insurance is the only way to deal with risk',
+                    'iv. Insurers can have many different meanings when talking about risk'
+                ],
+                options: {
+                    A: { zh: 'A. i, ii', en: 'A. i, ii' },
+                    B: { zh: 'B. ii, iv', en: 'B. ii, iv' },
+                    C: { zh: 'C. i, iv', en: 'C. i, iv' },
+                    D: { zh: 'D. i, iii, iv', en: 'D. i, iii, iv' }
+                },
+                correctAnswer: 'B',
+                explanation: '並非所有風險都商業上可保，例如純粹風險中若不滿足可保標準則不可保。同時，保險人在不同語境下對「風險」一詞有不同含義（如指危險、標的物或不確定性本身）。\n\nNot all risks are commercially insurable; for example, pure risks may not be insurable if they do not meet certain criteria. Additionally, insurers use the term "risk" with various meanings depending on the context (e.g., referring to a peril, a subject-matter, or the uncertainty itself).'
+            },
+            {
+                question_zh: '1.1.1 在不同的情況下,有一相同詞語來形容造成損失的原因、承保的財物或人身、所保風險,這詞語是:',
+                question_en: '1.1.1 In different contexts, the same term is used to describe the cause of loss, the insured property or person, and the insured risk. This term is:',
+                options: {
+                    A: { zh: 'A. 風險', en: 'A. Risk' },
+                    B: { zh: 'B. 保險', en: 'B. Insurance' },
+                    C: { zh: 'C. 保單', en: 'C. Policy' },
+                    D: { zh: 'D. 近因', en: 'D. Proximate cause' }
+                },
+                correctAnswer: 'A',
+                explanation: '「風險」一詞在保險領域中具有多義性，它可以指導致損失的危險（Peril），也可以指被保險的標的物（Subject-matter at Risk），或是損失發生的不確定性（Uncertainty）。\n\nThe term "risk" in the insurance field is polysemous; it can refer to the peril causing a loss, the subject-matter at risk being insured, or the uncertainty of a loss occurring.'
+            },
+            {
+                question_zh: '1.1.1 「風險所帶來的潛在損失可能是身體上的,財務上的及情緒上的。」以下哪項或哪些潛在損失可能是可保的:',
+                question_en: '1.1.1 "The potential losses brought about by risk can be physical, financial, and emotional." Which of the following potential losses may be insurable:',
+                options: {
+                    A: { zh: 'A. 身體上的及財務上的可保而已', en: 'A. Only physical and financial losses are insurable' },
+                    B: { zh: 'B. 身體上的及情緒上的可保而已', en: 'B. Only physical and emotional losses are insurable' },
+                    C: { zh: 'C. 財務上的及情緒上的可保而已', en: 'C. Only financial and emotional losses are insurable' },
+                    D: { zh: 'D. 身體上的、財務上的及情緒上的', en: 'D. Physical, financial, and emotional losses' }
+                },
+                correctAnswer: 'A',
+                explanation: '保險主要承保可量化的財務損失和人身傷害（身體上的損失），而情緒上的損失通常難以量化且不直接可保。\n\nInsurance primarily covers quantifiable financial losses and bodily injuries (physical losses), while emotional losses are generally difficult to quantify and are not directly insurable.'
+            },
+            {
+                question_zh: '1.1.1 在保險方面,以下哪項最能描述風險的含意?',
+                question_en: '1.1.1 In terms of insurance, which of the following best describes the meaning of risk?',
+                options: {
+                    A: { zh: 'A. 有關潛在損失的不確定性', en: 'A. Uncertainty regarding potential loss' },
+                    B: { zh: 'B. 有關潛在收益的不確定性', en: 'B. Uncertainty regarding potential gain' },
+                    C: { zh: 'C. 取得利益的數學的或然率', en: 'C. Mathematical probability of obtaining benefits' },
+                    D: { zh: 'D. 保險人可能變得無力償債的危險性', en: 'D. The possibility that the insurer may become insolvent' }
+                },
+                correctAnswer: 'A',
+                explanation: '在保險領域，風險最核心的含義是與潛在損失相關的不確定性，即損失是否會發生以及何時發生。\n\nIn the field of insurance, the most fundamental meaning of risk is the uncertainty associated with potential loss, i.e., whether and when a loss will occur.'
+            },
+            {
+                question_zh: '1.1.2a 以下哪項是正確描述「純粹風險」的?',
+                question_en: '1.1.2a Which of the following correctly describes "pure risk"?',
+                options: {
+                    A: { zh: 'A. 一艘船隻沉沒', en: 'A. A ship sinking' },
+                    B: { zh: 'B. 戰爭武器的生產', en: 'B. Production of weapons of war' },
+                    C: { zh: 'C. 一幅名畫於博物館內被盜竊', en: 'C. A famous painting stolen from a museum' },
+                    D: { zh: 'D. 一輛飛機墜毀', en: 'D. An airplane crash' }
+                },
+                correctAnswer: 'A',
+                explanation: '純粹風險是指只有損失或無損失兩種結果的風險，沒有獲利的可能。「船隻沉沒」直接導致損失，符合純粹風險的定義。其他選項可能涉及更複雜的分類或投機性質。\n\nPure risk refers to a risk that only has two outcomes: loss or no loss, with no possibility of gain. "A ship sinking" directly results in a loss, fitting the definition of pure risk. Other options might involve more complex classifications or speculative elements.'
+            },
+            {
+                question_zh: '1.1.2a(i) 「純粹風險」的定義:',
+                question_en: '1.1.2a(i) Definition of "pure risk":',
+                options: {
+                    A: { zh: 'A. 一個永久不可保的風險', en: 'A. A permanently uninsurable risk' },
+                    B: { zh: 'B. 一份保險而保單持有人抱著誠實的態度', en: 'B. An insurance policy where the policyholder maintains an honest attitude' },
+                    C: { zh: 'C. 一項只有損失而不具收益的風險', en: 'C. A risk that only results in loss without gain' },
+                    D: { zh: 'D. 一個具有災難性損失的風險', en: 'D. A risk with catastrophic loss' }
+                },
+                correctAnswer: 'C',
+                explanation: '純粹風險的典型定義是只有兩種結果：損失或沒有損失，但不包括獲利的可能性。這與投機風險（可能盈利或損失）相對。\n\nThe typical definition of pure risk is that it has only two outcomes: loss or no loss, without the possibility of gain. This contrasts with speculative risk (which can result in profit or loss).'
+            },
+            {
+                question_zh: '1.1.2b 以下哪項為「基本風險」而非「特定風險」的類別?',
+                question_en: '1.1.2b Which of the following is a category of "fundamental risk" rather than "particular risk"?',
+                options: {
+                    A: { zh: 'A. 巴士墮崖', en: 'A. Bus falling off a cliff' },
+                    B: { zh: 'B. 航機失事', en: 'B. Aircraft accident' },
+                    C: { zh: 'C. 戰事', en: 'C. War' },
+                    D: { zh: 'D. 渡輪意外', en: 'D. Ferry accident' }
+                },
+                correctAnswer: 'C',
+                explanation: '基本風險（Fundamental Risk）是指影響廣泛人群或整個社會的風險，如戰爭、地震、通貨膨脹等。特定風險（Particular Risk）則只影響個人或特定群體，如巴士墮崖、航機失事、渡輪意外等。\n\nFundamental Risk refers to risks that affect a large group of people or an entire society, such as war, earthquakes, inflation, etc. Particular Risk, on the other hand, only affects individuals or specific groups, such as a bus falling off a cliff, an aircraft accident, or a ferry accident.'
+            },
+            {
+                question_zh: '1.1.2b(ii) 饑荒、戰爭及大規模洪災是屬於哪類風險?',
+                question_en: '1.1.2b(ii) Famine, war, and large-scale floods belong to which type of risk?',
+                options: {
+                    A: { zh: 'A. 純粹風險', en: 'A. Pure risk' },
+                    B: { zh: 'B. 災難風險', en: 'B. Catastrophic risk' },
+                    C: { zh: 'C. 特定風險', en: 'C. Particular risk' },
+                    D: { zh: 'D. 基本風險', en: 'D. Fundamental risk' }
+                },
+                correctAnswer: 'D',
+                explanation: '饑荒、戰爭和大規模洪災的影響是廣泛且非個人可控的，它們影響社會大眾，因此屬於基本風險。\n\nFamine, war, and large-scale floods have widespread and uncontrollable impacts. They affect the general public and are therefore classified as fundamental risks.'
+            },
+            {
+                question_zh: '1.1.3 以下哪項是對「風險管理」的不正確描述?',
+                question_en: '1.1.3 Which of the following is an incorrect description of "risk management"?',
+                options: {
+                    A: { zh: 'A. 保險人可以廣義的作出運用', en: 'A. Insurers can apply it broadly' },
+                    B: { zh: 'B. 在投資的述語中可能涉及管理投機風險', en: 'B. In investment terminology, it may involve managing speculative risk' },
+                    C: { zh: 'C. 保險公司可以把運用範圍收窄至管理可保風險', en: 'C. Insurance companies can narrow its application to managing insurable risks' },
+                    D: { zh: 'D. 可以描述為管理純粹風險或投機風險', en: 'D. It can be described as managing pure risk or speculative risk' }
+                },
+                correctAnswer: 'A',
+                explanation: '保險人通常在承保實務中將風險管理的範圍收窄至與可保風險相關的範圍，並非廣義地應用於所有風險，因為風險管理作為一門獨立學科通常涵蓋純粹風險和投機風險。\n\nIn underwriting practices, insurers typically narrow the scope of risk management to risks related to insurability, not broadly applying it to all risks. This is because risk management as an independent discipline generally covers both pure and speculative risks.'
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let userAnswers = {}; // 用於儲存用戶對所有問題的選擇
+        let questionAnswered = {}; // 用於追蹤問題是否已正確回答
+
+        const questionContainer = document.getElementById('questionContainer');
+        const explanationBox = document.getElementById('explanation');
+        const explanationText = document.getElementById('explanationText');
+        const prevBtn = document.getElementById('prevBtn');
+        const checkBtn = document.getElementById('checkBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const quizSummary = document.getElementById('quizSummary');
+        const finalScoreSpan = document.getElementById('finalScore');
+        const totalQuestionsSummarySpan = document.getElementById('totalQuestionsSummary');
+        const restartBtn = document.getElementById('restartBtn');
+
+        // Function to display the current question
+        function displayQuestion() {
+            if (currentQuestionIndex < quizData.length) {
+                const q = quizData[currentQuestionIndex];
+                let subOptionsHtml = '';
+                if (q.subOptions_zh && q.subOptions_zh.length > 0) {
+                    subOptionsHtml = `<ul class="sub-options-list">` +
+                                     q.subOptions_zh.map((opt, index) => `<li><span class="sub-option-zh">${opt}</span><br><span class="sub-option-en">${q.subOptions_en[index]}</span></li>`).join('') +
+                                     `</ul>`;
+                }
+
+                questionContainer.innerHTML = `
+                    <p class="question-text-zh">${q.question_zh}</p>
+                    <p class="question-text-en">${q.question_en}</p>
+                    ${subOptionsHtml}
+                    <div class="options-container">
+                        ${Object.keys(q.options).map(key => `
+                            <label class="option-label">
+                                <div class="option-content">
+                                    <input type="radio" name="currentQuestion" value="${key}" ${userAnswers[currentQuestionIndex] === key ? 'checked' : ''} ${questionAnswered[currentQuestionIndex] ? 'disabled' : ''}>
+                                    <div>
+                                        <span class="option-text-zh">${q.options[key].zh}</span><br>
+                                        <span class="option-text-en">${q.options[key].en}</span>
+                                    </div>
+                                </div>
+                            </label>
+                        `).join('')}
+                    </div>
+                `;
+
+                // 隱藏解釋並重置按鈕狀態
+                explanationBox.classList.add('hidden');
+                checkBtn.disabled = false;
+                checkBtn.textContent = '檢查答案 / Check Answer';
+                checkBtn.classList.remove('secondary-button');
+                checkBtn.classList.add('primary-button');
+
+                // 啟用/禁用導航按鈕
+                prevBtn.disabled = currentQuestionIndex === 0;
+                nextBtn.disabled = false; // 下一個總是啟用，總結在最後
+
+                // 如果問題之前已經回答過，顯示檢查答案
+                if (questionAnswered[currentQuestionIndex]) {
+                    showAnswerFeedback(true); // true 表示是從加載中，而不是檢查中
+                }
+            } else {
+                // 測驗結束
+                showQuizSummary();
+            }
+        }
+
+        // Function to show answer feedback
+        function showAnswerFeedback(isFromLoad = false) {
+            const q = quizData[currentQuestionIndex];
+            const selectedOptionInput = document.querySelector('input[name="currentQuestion"]:checked');
+            const options = questionContainer.querySelectorAll('input[type="radio"]');
+
+            // 一旦檢查或加載後禁用所有單選按鈕
+            options.forEach(option => option.disabled = true);
+            checkBtn.disabled = true;
+
+            // 重置所有選項標籤樣式
+            options.forEach(option => {
+                const label = option.closest('.option-label');
+                label.style.backgroundColor = '#f9fafb';
+                label.style.border = '1px solid #e5e7eb';
+                label.querySelector('.option-text-zh').style.color = '#374151'; // Reset Chinese text color
+                label.querySelector('.option-text-en').style.color = '#6b7280'; // Reset English text color
+            });
+
+            // 以綠色突出顯示正確答案
+            const correctOptionLabel = document.querySelector(`input[name="currentQuestion"][value="${q.correctAnswer}"]`).closest('.option-label');
+            if (correctOptionLabel) {
+                correctOptionLabel.style.backgroundColor = '#d1fae5'; /* 淺綠色 */
+                correctOptionLabel.style.border = '1px solid #34d399'; /* 綠色邊框 */
+                correctOptionLabel.querySelector('.option-text-zh').style.color = '#065f46'; // Dark green for Chinese
+                correctOptionLabel.querySelector('.option-text-en').style.color = '#065f46'; // Dark green for English
+            }
+
+            // 以紅色突出顯示不正確的選定答案（如果已回答）
+            if (selectedOptionInput && selectedOptionInput.value !== q.correctAnswer) {
+                const incorrectOptionLabel = selectedOptionInput.closest('.option-label');
+                if (incorrectOptionLabel) {
+                    incorrectOptionLabel.style.backgroundColor = '#fee2e2'; /* 淺紅色 */
+                    incorrectOptionLabel.style.border = '1px solid #ef4444'; /* 紅色邊框 */
+                    incorrectOptionLabel.querySelector('.option-text-zh').style.color = '#991b1b'; // Dark red for Chinese
+                    incorrectOptionLabel.querySelector('.option-text-en').style.color = '#991b1b'; // Dark red for English
+                }
+            }
+
+            // 顯示解釋
+            explanationText.textContent = q.explanation;
+            explanationBox.classList.remove('hidden');
+
+            // 如果不是從加載中，更新分數並標記為已回答
+            if (!isFromLoad && selectedOptionInput && selectedOptionInput.value === q.correctAnswer) {
+                if (!questionAnswered[currentQuestionIndex]) { // 防止重複計算
+                    score++;
+                }
+            }
+            if (!isFromLoad) {
+                questionAnswered[currentQuestionIndex] = true;
+                userAnswers[currentQuestionIndex] = selectedOptionInput ? selectedOptionInput.value : null; // 儲存答案
+            }
+        }
+
+        // Event listener for Check Answer button
+        checkBtn.addEventListener('click', function() {
+            const selectedOption = document.querySelector('input[name="currentQuestion"]:checked');
+            if (!selectedOption) {
+                // 使用自定義訊息框而不是 alert()
+                const messageBox = document.createElement('div');
+                messageBox.className = 'fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50';
+                messageBox.innerHTML = `
+                    <div class="bg-white p-8 rounded-lg shadow-lg text-center max-w-sm">
+                        <p class="text-lg font-semibold mb-4">請在檢查前選擇一個答案。 / Please select an answer before checking.</p>
+                        <button class="button primary-button w-full" onclick="this.closest('.fixed').remove()">確定 / OK</button>
+                    </div>
+                `;
+                document.body.appendChild(messageBox);
+                return;
+            }
+            showAnswerFeedback();
+        });
+
+        // Event listener for Next button
+        nextBtn.addEventListener('click', function() {
+            if (currentQuestionIndex < quizData.length - 1) {
+                currentQuestionIndex++;
+                displayQuestion();
+            } else {
+                showQuizSummary();
+            }
+        });
+
+        // Event listener for Previous button
+        prevBtn.addEventListener('click', function() {
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+                displayQuestion();
+            }
+        });
+
+        // Function to show quiz summary
+        function showQuizSummary() {
+            questionContainer.classList.add('hidden');
+            checkBtn.classList.add('hidden');
+            prevBtn.classList.add('hidden');
+            nextBtn.classList.add('hidden');
+            explanationBox.classList.add('hidden');
+
+            finalScoreSpan.textContent = score;
+            totalQuestionsSummarySpan.textContent = quizData.length;
+            quizSummary.classList.remove('hidden');
+            quizSummary.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        // Function to restart quiz
+        restartBtn.addEventListener('click', function() {
+            currentQuestionIndex = 0;
+            score = 0;
+            userAnswers = {};
+            questionAnswered = {};
+
+            quizSummary.classList.add('hidden');
+            questionContainer.classList.remove('hidden');
+            checkBtn.classList.remove('hidden');
+            prevBtn.classList.remove('hidden');
+            nextBtn.classList.remove('hidden');
+
+            displayQuestion();
+        });
+
+        // Initial display of the first question
+        displayQuestion();
+    </script>
+</body>
+</html>
